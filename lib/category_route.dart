@@ -8,6 +8,9 @@ import 'category.dart';
 import 'category_tile.dart';
 import 'unit.dart';
 
+import 'backdrop.dart';
+import 'unit_converter.dart';
+
 final _backgroundColor = Colors.green[100];
 
 /// Category Route (screen).
@@ -26,6 +29,8 @@ class CategoryRoute extends StatefulWidget {
 
 class _CategoryRouteState extends State<CategoryRoute> {
   // TODO: Keep track of a default [Category], and the currently-selected
+  var _category;
+  var _defaultCategory;
   // [Category]
   final _categories = <Category>[];
   static const _categoryNames = <String>[
@@ -86,25 +91,44 @@ class _CategoryRouteState extends State<CategoryRoute> {
         units: _retrieveUnitList(_categoryNames[i]),
       ));
     }
+    _category = _categories[0];
+    _defaultCategory = _categories[0];
   }
 
   // TODO: Fill out this function
   /// Function to call when a [Category] is tapped.
-  void _onCategoryTap(Category category) {}
+  void _onCategoryTap(Category category) {
+    setState(() {
+      _category = category;
+    });
+  }
 
   /// Makes the correct number of rows for the list view.
   ///
   /// For portrait, we use a [ListView].
-  Widget _buildCategoryWidgets() {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) {
-        return CategoryTile(
-          category: _categories[index],
-          onTap: _onCategoryTap,
-        );
-      },
-      itemCount: _categories.length,
-    );
+  Widget _buildCategoryWidgets(Orientation deviceOrientation) {
+    if (deviceOrientation == Orientation.portrait) {
+      return ListView.builder(
+        itemBuilder: (BuildContext context, int index) {
+          return CategoryTile(
+            category: _categories[index],
+            onTap: _onCategoryTap,
+          );
+        },
+        itemCount: _categories.length,
+      );
+    } else {
+      return GridView.count(
+        crossAxisCount: 2,
+        childAspectRatio: 3.0,
+        children: _categories.map((Category c) {
+          return CategoryTile(
+            category: c,
+            onTap: _onCategoryTap,
+          );
+        }).toList(),
+      );
+    }
   }
 
   /// Returns a list of mock [Unit]s.
@@ -120,29 +144,27 @@ class _CategoryRouteState extends State<CategoryRoute> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Import and use the Backdrop widget
-    final listView = Container(
-      color: _backgroundColor,
-      padding: EdgeInsets.symmetric(horizontal: 8.0),
-      child: _buildCategoryWidgets(),
-    );
-
-    final appBar = AppBar(
-      elevation: 0.0,
-      title: Text(
-        'Unit Converter',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 30.0,
-        ),
+    // Based on the device size, figure out how to best lay out the list
+    // You can also use MediaQuery.of(context).size to calculate the orientation
+    assert(debugCheckHasMediaQuery(context));
+    final listView = Padding(
+      padding: EdgeInsets.only(
+        left: 8.0,
+        right: 8.0,
+        bottom: 48.0,
       ),
-      centerTitle: true,
-      backgroundColor: _backgroundColor,
+      child: _buildCategoryWidgets(MediaQuery.of(context).orientation),
     );
 
-    return Scaffold(
-      appBar: appBar,
-      body: listView,
+    return Backdrop(
+      currentCategory:
+      _category == null ? _defaultCategory : _category,
+      frontPanel: _category == null
+          ? UnitConverter(category: _defaultCategory)
+          : UnitConverter(category: _category),
+      backPanel: listView,
+      frontTitle: Text('Unit Converter'),
+      backTitle: Text('Select a Category'),
     );
   }
 }
