@@ -1,4 +1,4 @@
-# hello_rectange
+# hello_rectangle
 
 A new Flutter application.
 
