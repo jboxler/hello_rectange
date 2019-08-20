@@ -92,8 +92,7 @@ class _CategoryRouteState extends State<CategoryRoute> {
     // We only want to load our data in once
     if (_categories.isEmpty) {
       await _retrieveLocalCategories();
-      //  Call _retrieveApiCategory() here
-      _retrieveApiCategory();
+      await _retrieveApiCategory();
     }
   }
 
@@ -101,7 +100,8 @@ class _CategoryRouteState extends State<CategoryRoute> {
   Future<void> _retrieveLocalCategories() async {
     // Consider omitting the types for local variables. For more details on Effective
     // Dart Usage, see https://www.dartlang.org/guides/language/effective-dart/usage
-    final json = DefaultAssetBundle.of(context)
+    final json = DefaultAssetBundle
+        .of(context)
         .loadString('assets/data/regular_units.json');
     final data = JsonDecoder().convert(await json);
     if (data is! Map) {
@@ -128,19 +128,21 @@ class _CategoryRouteState extends State<CategoryRoute> {
     });
   }
 
-  // TODO: Add the Currency Category retrieved from the API, to our _categories
   /// Retrieves a [Category] and its [Unit]s from an API on the web
   Future<void> _retrieveApiCategory() async {
+    // Add a placeholder while we fetch the Currency category using the API
     setState(() {
       _categories.add(Category(
         name: apiCategory['name'],
-        color: _baseColors.last,
         units: [],
+        color: _baseColors.last,
         iconLocation: _icons.last,
       ));
     });
     final api = Api();
     final jsonUnits = await api.getUnits(apiCategory['route']);
+    // If the API errors out or we have no internet connection, this category
+    // remains in placeholder mode (disabled)
     if (jsonUnits != null) {
       final units = <Unit>[];
       for (var unit in jsonUnits) {
@@ -150,8 +152,8 @@ class _CategoryRouteState extends State<CategoryRoute> {
         _categories.removeLast();
         _categories.add(Category(
           name: apiCategory['name'],
-          color: _baseColors.last,
           units: units,
+          color: _baseColors.last,
           iconLocation: _icons.last,
         ));
       });
