@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'api.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
@@ -98,7 +101,17 @@ class _UnitConverterState extends State<UnitConverter> {
     return outputNum;
   }
 
-  void _updateConversion() {
+  // If in the Currency [Category], call the API to retrieve the conversion.
+  // Remember, the API call is an async function.
+  Future<void> _updateConversion() async {
+    if (widget.category.name == apiCategory['name']) {
+      final api = Api();
+      final conversion = await api.convert(apiCategory['rounte'], _inputValue.toString(), _fromValue.name, _toValue.name);
+
+      setState(() {
+        _convertedValue = _format(conversion);
+      });
+    }
     setState(() {
       _convertedValue =
           _format(_inputValue * (_toValue.conversion / _fromValue.conversion));
