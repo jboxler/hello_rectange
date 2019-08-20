@@ -26,6 +26,9 @@ class CategoryTile extends StatelessWidget {
   const CategoryTile({
     Key key,
     @required this.category,
+    // TODO: You may want to pass in a null onTap when the Currency [Category]
+    // is in a loading or error state. In build(), you'll want to update the UI
+    // accordingly.
     @required this.onTap,
   })  : assert(category != null),
         assert(onTap != null),
